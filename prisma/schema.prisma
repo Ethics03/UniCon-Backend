@@ -17,4 +17,6 @@ model Users{
   id Int @id @default(autoincrement())
   name String @db.VarChar(100)
   password String @db.VarChar(100)
+  username String @unique @db.VarChar(45)
+  email String @unique @db.VarChar(45)
 }
