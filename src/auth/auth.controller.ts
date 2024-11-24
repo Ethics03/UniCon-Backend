@@ -1,5 +1,5 @@
 import { Controller,Post, Get , Body} from '@nestjs/common';
-import { AuthPayloadDTO } from './dto/auth.dto';
+import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO} from './dto/auth.dto';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -14,4 +14,9 @@ export class AuthController {
     login(@Body() authpayload: AuthPayloadDTO){
         return this.authService.validateUser(authpayload);
 }
+
+  @Post('register')
+    async register(@Body() createduser: CreateUserDTO){
+        return await this.authService.createUser(createduser);
+    }
 }
