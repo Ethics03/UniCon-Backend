@@ -7,9 +7,8 @@ export class AuthPayloadDTO{
 }
 
 export class AuthResponseDTO{
-    id: string;
-    username: string;
-    token: string; // The JWT token
+   
+    access_token: string; // The JWT token
 }
 
 export class CreateUserDTO{

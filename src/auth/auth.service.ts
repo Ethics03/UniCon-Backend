@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO} from './dto/auth.dto';
-
+import { JwtPayload } from './jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -34,17 +34,28 @@ export class AuthService {
             },
         })
     }
+
+    async findUserByUsernameAndId(username: string, userId: number) {
+        return await this.prisma.users.findUnique({
+            where: { username, id: userId }, // Ensure you match both username and userId
+        });
+    }
     
     async login(payload : AuthPayloadDTO): Promise<AuthResponseDTO>{
 
         const user = await this.validateUser(payload)
+        
 
-        const token = this.jwtService.sign({username: user.username , sub: user.id})
-        return{
-            id: user.id,
+        const token = this.jwtService.sign({
             username: user.username,
-            token
-        };
+            sub: user.id,
+        })
+        
+        return {
+                access_token: token,
+        }
     }
+
+
 }
 
