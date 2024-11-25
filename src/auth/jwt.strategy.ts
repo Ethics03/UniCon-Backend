@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy){
             throw new Error('User not found')
         }
 
-        return {userId,username};
+        return {id: userId,username: username}; //make sure u put the attributes of the user and match it with the JWTpayload
 
     }
 }

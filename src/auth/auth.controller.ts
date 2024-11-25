@@ -1,5 +1,6 @@
-import { Controller,Post, Get , Body, UseGuards, Request} from '@nestjs/common';
+import { Controller,Post, Get , Body, UseGuards, HttpCode,Res,Request,Delete} from '@nestjs/common';
 import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO} from './dto/auth.dto';
+
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -12,14 +13,27 @@ export class AuthController {
 
 
   @Post('login')
-    login(@Body() authpayload: AuthPayloadDTO): Promise<AuthResponseDTO>{
-        return this.authService.login(authpayload);
+    async login(@Body() authpayload: AuthPayloadDTO): Promise<AuthResponseDTO>{
+
+        return await this.authService.login(authpayload);
+
 }
 
   @Post('register')
     async register(@Body() createduser: CreateUserDTO){
         return await this.authService.createUser(createduser)
     }
+
+  @UseGuards(JwtAuthGuard) 
+  @Delete('delete')
+     deleteUser(@Request() req){
+      const userid = req.user.id; // get user id from the jwt payload
+    
+      const result =  this.authService.deleteUser(userid);
+      return result;
+    }
+
+
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
