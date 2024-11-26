@@ -1,5 +1,5 @@
-import { Controller,Post, Get , Body, UseGuards,Res,Delete,Request, NotFoundException} from '@nestjs/common';
-import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO} from './dto/auth.dto';
+import { Controller,Post, Get , Body, UseGuards,Res,Delete,Request, NotFoundException , Put,Param,BadRequestException, ParseIntPipe} from '@nestjs/common';
+import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO, UpdateUserDTO} from './dto/auth.dto';
 import {Response} from 'express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -59,6 +59,24 @@ export class AuthController {
       return result;
     }
 
+  @UseGuards(JwtAuthGuard)
+  @Put('update/:id')
+  async updateUser(
+    @Param('id',ParseIntPipe) userId: number, // use ParseIntPipe -> by default string
+    @Body() updatedata: UpdateUserDTO,
+    @Res({passthrough: true}) res: Response):Promise<AuthResponseDTO>{
+      
+        const UpdatedUserToken = await this.authService.updateUser(userId,updatedata);
+
+        res.cookie('access_token', UpdatedUserToken.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',  // Use secure cookies in production
+          sameSite: 'strict',
+          maxAge: 6 * 60 * 60 * 1000,  // 6 hours expiration
+      });
+      return UpdatedUserToken;
+    }
+  
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
