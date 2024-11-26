@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString , IsOptional, IsEmail} from 'class-validator';
 
 export class AuthPayloadDTO{
   
@@ -21,10 +21,28 @@ export class CreateUserDTO{
     password: string;
 
     @IsNotEmpty()
-    @IsString()
+    @IsEmail()
     email: string;
 
   @IsNotEmpty()
   @IsString()
     name: string;
+}
+
+export class UpdateUserDTO {
+  @IsOptional() 
+  @IsString()
+  username?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  name? : string;
 }
