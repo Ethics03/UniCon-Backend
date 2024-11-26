@@ -28,8 +28,27 @@ export class AuthController {
 }
 
   @Post('register')
-    async register(@Body() createduser: CreateUserDTO){
-        return await this.authService.createUser(createduser)
+    async register(@Body() createduser: CreateUserDTO, @Res() res:Response): Promise<void>{
+
+      try{
+        const newUserToken =  await this.authService.createUser(createduser);
+        res.cookie('access_token',newUserToken.access_token,{
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 3600000,
+        });
+
+        res.status(200).json({access_token: newUserToken.access_token})
+
+      }
+      catch(error){
+        res.status(500).json({
+          message: 'User Registration Failed',
+          error: error.message,
+        });
+      }
+
     }
 
   @UseGuards(JwtAuthGuard) 
@@ -49,7 +68,7 @@ export class AuthController {
     return {
       message: "User Profile Data",
       user: req.user,
-    };  //`user` will contain the data from the JWT payload (set in the JwtStrategy)
+    };
   }
 
   
