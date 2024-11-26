@@ -1,4 +1,4 @@
-import { Injectable , NotFoundException, Param, UnauthorizedException} from '@nestjs/common';
+import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,6 +13,7 @@ export class AuthService {
         private readonly prisma: PrismaService,
     ){}
 
+
     async validateUser(logindto: AuthPayloadDTO): Promise<any>{
         const {username,password} = logindto
 
@@ -25,9 +26,26 @@ export class AuthService {
         throw new UnauthorizedException('Invalid Credentials');
         }
 
+
     async createUser(createdata: CreateUserDTO): Promise<AuthResponseDTO>{
-    
+
+        const {username,email} = createdata;
+        const existingusername = await this.prisma.users.findUnique({where: {username}});
+        const existingemail = await this.prisma.users.findUnique({where: {email}});
+
+        if(existingusername){
+            throw new ConflictException('Username already exists. Please choose a different username.');
+        }
+        if(existingemail){
+            throw new ConflictException('An account already exists for this email');
+        }
+
+
+
+
     try{
+        
+
         const hashedpass = await bcrypt.hash(createdata.password,10);
            const newUser = await this.prisma.users.create({
             data: {
@@ -48,8 +66,8 @@ export class AuthService {
     catch (error) {
         throw new Error("Failed to create user. Please try again later.");
     }
-
     }
+
 
     async findUserByUsernameAndId(username: string, userId: number) {
         return await this.prisma.users.findUnique({
@@ -66,11 +84,9 @@ export class AuthService {
         if(!user){
             throw new NotFoundException('User Not Found');
         }
-        
         await this.prisma.users.delete({
             where: { id: userId }
           });
-          
           return { message: 'User deleted successfully' };
     }
 
@@ -88,9 +104,7 @@ export class AuthService {
             sub: user.id,
         })
         
-        return {
-                access_token: token,
-        }
+        return {access_token: token}
     }
 
 
