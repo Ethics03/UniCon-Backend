@@ -3,8 +3,6 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class AuthPayloadDTO{
   
   username: string;
-
-  
   password: string;
 }
 

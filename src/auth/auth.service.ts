@@ -25,23 +25,30 @@ export class AuthService {
         throw new UnauthorizedException('Invalid Credentials');
         }
 
-    async createUser(createdata: CreateUserDTO){
-        
-
+    async createUser(createdata: CreateUserDTO): Promise<AuthResponseDTO>{
+    
     try{
         const hashedpass = await bcrypt.hash(createdata.password,10);
-
-        return this.prisma.users.create({
+           const newUser = await this.prisma.users.create({
             data: {
                 ...createdata,
                 password: hashedpass,
             },
         })
+
+        const token = this.jwtService.sign({
+            username: newUser.username,
+            sub: newUser.id,
+        })
+
+        return {
+            access_token: token,
+    }
     }
     catch (error) {
-        console.error("Error creating user:", error);
         throw new Error("Failed to create user. Please try again later.");
     }
+
     }
 
     async findUserByUsernameAndId(username: string, userId: number) {

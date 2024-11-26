@@ -1,4 +1,4 @@
-import { Controller,Post, Get , Body, UseGuards, HttpCode,Res,Request,Delete} from '@nestjs/common';
+import { Controller,Post, Get , Body, UseGuards, HttpCode,Res,Request,Delete, NotFoundException} from '@nestjs/common';
 import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO} from './dto/auth.dto';
 
 import { AuthService } from './auth.service';
@@ -16,7 +16,7 @@ export class AuthController {
     async login(@Body() authpayload: AuthPayloadDTO): Promise<AuthResponseDTO>{
 
         return await this.authService.login(authpayload);
-
+        
 }
 
   @Post('register')
