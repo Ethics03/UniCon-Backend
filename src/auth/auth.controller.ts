@@ -1,6 +1,6 @@
-import { Controller,Post, Get , Body, UseGuards, HttpCode,Res,Request,Delete, NotFoundException} from '@nestjs/common';
+import { Controller,Post, Get , Body, UseGuards,Res,Delete,Request, NotFoundException} from '@nestjs/common';
 import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO} from './dto/auth.dto';
-
+import {Response} from 'express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -10,13 +10,21 @@ export class AuthController {
   constructor(private authService : AuthService){}
 
 
-
-
   @Post('login')
-    async login(@Body() authpayload: AuthPayloadDTO): Promise<AuthResponseDTO>{
+    async login(@Body() authpayload: AuthPayloadDTO,@Res() res: Response): Promise<void>{
 
-        return await this.authService.login(authpayload);
-        
+        const loginToken =  this.authService.login(authpayload);
+
+        res.cookie('access_token',(await loginToken).access_token,{
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 3600000,
+        });
+
+           res.status(200).json({
+          access_token: (await loginToken).access_token
+        });
 }
 
   @Post('register')
