@@ -12,14 +12,14 @@ export class AuthController {
 
   @Post('login')
     async login(@Body() authpayload: AuthPayloadDTO,@Res() res: Response): Promise<void>{
-
+      
         const loginToken =  this.authService.login(authpayload);
 
         res.cookie('access_token',(await loginToken).access_token,{
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 3600000,
+          maxAge: 6 * 60 * 60 * 1000,
         });
 
            res.status(200).json({
@@ -32,11 +32,12 @@ export class AuthController {
 
       try{
         const newUserToken =  await this.authService.createUser(createduser);
+
         res.cookie('access_token',newUserToken.access_token,{
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
-          maxAge: 3600000,
+          maxAge: 6 * 60 * 60 * 1000,
         });
 
         res.status(200).json({access_token: newUserToken.access_token})
@@ -59,7 +60,6 @@ export class AuthController {
       const result =  this.authService.deleteUser(userid);
       return result;
     }
-
 
 
   @UseGuards(JwtAuthGuard)
