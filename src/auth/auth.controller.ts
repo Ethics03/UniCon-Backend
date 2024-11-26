@@ -11,24 +11,22 @@ export class AuthController {
 
 
   @Post('login')
-    async login(@Body() authpayload: AuthPayloadDTO,@Res() res: Response): Promise<void>{
+    async login(@Body() authpayload: AuthPayloadDTO,@Res({passthrough: true}) res: Response): Promise<AuthResponseDTO>{
       
-        const loginToken =  this.authService.login(authpayload);
+        const loginToken =  await this.authService.login(authpayload);
 
-        res.cookie('access_token',(await loginToken).access_token,{
+        res.cookie('access_token',loginToken.access_token,{
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
           maxAge: 6 * 60 * 60 * 1000,
         });
 
-           res.status(200).json({
-          access_token: (await loginToken).access_token
-        });
+         return loginToken;
 }
 
   @Post('register')
-    async register(@Body() createduser: CreateUserDTO, @Res() res:Response): Promise<void>{
+    async register(@Body() createduser: CreateUserDTO, @Res({passthrough: true}) res:Response): Promise<AuthResponseDTO>{
 
       try{
         const newUserToken =  await this.authService.createUser(createduser);
@@ -40,7 +38,7 @@ export class AuthController {
           maxAge: 6 * 60 * 60 * 1000,
         });
 
-        res.status(200).json({access_token: newUserToken.access_token})
+        return newUserToken;
 
       }
       catch(error){
