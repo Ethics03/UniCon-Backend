@@ -46,3 +46,18 @@ export class UpdateUserDTO {
   @IsString()
   name? : string;
 }
+
+export class GoogleUserDTO{
+  @IsString()
+  email: string;
+  @IsString()
+  firstName: string;
+  @IsString()
+  lastName: string;
+  @IsString()
+  picture: string;
+
+  @IsOptional()
+  @IsString()
+  accessToken?: string; //optional
+}
