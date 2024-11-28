@@ -3,6 +3,7 @@ import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO, UpdateUserDTO} from '.
 import {Response} from 'express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { GoogleOAuthGuard } from './google-OAuth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -87,5 +88,18 @@ export class AuthController {
     };
   }
 
-  
+  @Get('google/login')
+  @UseGuards(GoogleOAuthGuard)
+  handlelogin(){
+      return {msg: 'Google Authentication'};
+  }
+
+  //handles redirect
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  handleRedirect(){
+      return {msg: 'OK'};
+  }
+
+
 }
