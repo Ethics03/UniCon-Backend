@@ -7,10 +7,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal:true}),
+
     PrismaModule,
     PassportModule,
     JwtModule.register({
@@ -20,6 +22,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService,JwtStrategy,PrismaService],
+  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy],
 })
 export class AuthModule {}
