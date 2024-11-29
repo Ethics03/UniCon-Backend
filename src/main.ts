@@ -5,7 +5,7 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule,{logger: ['log', 'warn', 'error', 'debug', 'verbose'],});
   app.use(cookieParser()); //enabled cookie parser middleware
   app.use(
     session({
@@ -18,6 +18,8 @@ async function bootstrap() {
       },
     }),
   );
+  app.use(passport.initialize());
+  app.use(passport.session());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
