@@ -3,10 +3,16 @@ import { Strategy } from "passport-google-oauth2";
 import { VerifyCallback } from "passport-google-oauth2";
 import { GoogleAuthPayloadDTO, GoogleUserDTO } from "../dto/auth.dto";
 import { AuthService } from "../auth.service";
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common"
+import { ConflictException, Injectable, UnauthorizedException,Logger} from "@nestjs/common"
+
+
+
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy){
+
+    private readonly logger = new Logger(GoogleStrategy.name); 
+
     constructor(private readonly Authservice: AuthService){
         
         super({
@@ -42,6 +48,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy){
             done(null,userPayload);
         }
         catch(error){
+            this.logger.error('Error during Google OAuth validation', error.stack);
             done(error,null); 
         }
     }

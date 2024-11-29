@@ -1,4 +1,4 @@
-import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedException , InternalServerErrorException} from '@nestjs/common';
+import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedException , InternalServerErrorException,Logger} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,16 +8,18 @@ import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
+
     constructor(
         private readonly jwtService : JwtService,
         private readonly prisma: PrismaService,
     ){}
 
-
+    private readonly logger = new Logger(AuthService.name);
     //VALIDATING USER
     async validateUser(logindto: AuthPayloadDTO): Promise<any>{
         const {username,password} = logindto
 
+        
         //jwt validation 
         const user = await this.prisma.users.findUnique({where: {username}});
         if(user && (await bcrypt.compare(password , user.password))){
@@ -92,7 +94,7 @@ export class AuthService {
         
 
 
-        if (!googleId && !email) {
+        if (!googleId || !email) {
             throw new Error('Google ID or Email is required for this operation.');
           }
           
@@ -215,7 +217,8 @@ export class AuthService {
             secret: process.env.JWT_SECRET_KEY,
             expiresIn: '6h', 
           })
-        
+          
+        this.logger.log(`User logged in successfully: ${user.username}`);
         return {access_token: token}
     }
 
@@ -230,7 +233,7 @@ export class AuthService {
         secret: process.env.JWT_SECRET_KEY,
         expiresIn: '6h',
     });
-
+    
     return {
         access_token: token,
     }
