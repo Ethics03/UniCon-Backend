@@ -2,9 +2,41 @@ import { IsNotEmpty, IsString , IsOptional, IsEmail} from 'class-validator';
 
 export class AuthPayloadDTO{
   
+  @IsString()
   username: string;
+  @IsString()
   password: string;
+  
 }
+
+
+
+
+export class GoogleAuthPayloadDTO{
+
+
+  @IsNotEmpty()
+  @IsString()
+  googleId: string; 
+
+  
+  @IsString()
+  username?: string;
+
+  @IsOptional()
+  @IsString()
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  pictureUrl?: string
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+}
+
 
 export class AuthResponseDTO{
    
@@ -48,6 +80,10 @@ export class UpdateUserDTO {
 }
 
 export class GoogleUserDTO{
+
+  @IsString()
+  googleId: string;
+
   @IsString()
   email: string;
   @IsString()
@@ -55,9 +91,10 @@ export class GoogleUserDTO{
   @IsString()
   lastName: string;
   @IsString()
-  picture: string;
+  pictureUrl: string;
 
   @IsOptional()
   @IsString()
-  accessToken?: string; //optional
+  accesstoken?: string; //optional
+
 }
