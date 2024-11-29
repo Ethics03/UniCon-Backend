@@ -2,7 +2,7 @@ import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedE
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO, UpdateUserDTO} from './dto/auth.dto';
+import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO, GoogleAuthPayloadDTO, UpdateUserDTO} from './dto/auth.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { NotFoundError } from 'rxjs';
 
@@ -18,6 +18,7 @@ export class AuthService {
     async validateUser(logindto: AuthPayloadDTO): Promise<any>{
         const {username,password} = logindto
 
+        //jwt validation 
         const user = await this.prisma.users.findUnique({where: {username}});
         if(user && (await bcrypt.compare(password , user.password))){
                 const{password: _, ...result} = user;
@@ -27,9 +28,13 @@ export class AuthService {
         throw new UnauthorizedException('Invalid Credentials');
         }
 
+    
+    async GoogleFindUser(id: number){
+        const user = await this.prisma.users.findUnique({where: {id}});
+        return user;
+    }
 
-
-    //CREATING USER
+    //CREATING USER (JWT)
     async createUser(createdata: CreateUserDTO): Promise<AuthResponseDTO>{
 
         const {username,email} = createdata;
@@ -78,6 +83,51 @@ export class AuthService {
         return await this.prisma.users.findUnique({
             where: {id: userId }, // Ensure you match both username and userId
         });
+    }
+
+    //CREATING AND VALIDATING USER
+    async GoogleCreateUser(googlePayload: GoogleAuthPayloadDTO): Promise<AuthResponseDTO>{
+        const {googleId,email,pictureUrl} = googlePayload;
+
+        
+
+
+        if (!googleId && !email) {
+            throw new Error('Google ID or Email is required for this operation.');
+          }
+          
+          let user = googleId
+          ? await this.prisma.users.findUnique({ where: { googleId } })
+          : null;
+
+        if(!user && email){
+            user = await this.prisma.users.findUnique({ where: { email } });
+        }
+
+        if(user){
+            return this.generateJwtToken(user);
+                }
+
+
+        console.log(googlePayload);
+        try{
+            //fallback username if username not provided
+            const username = email.split('@')[0];
+            
+            const newUser = await this.prisma.users.create({
+                data: {
+                    googleId,
+                    email,
+                    username,
+                    pictureUrl,
+                },
+            });
+            return this.generateJwtToken(newUser);
+        }
+        catch(error){
+          throw new InternalServerErrorException('Failed to Create User with Google OAuth. Try Again');
+        }
+        
     }
     
 
@@ -167,6 +217,23 @@ export class AuthService {
           })
         
         return {access_token: token}
+    }
+
+    private generateJwtToken(user: any): AuthResponseDTO{
+
+        const token = this.jwtService.sign(
+            {
+            username: user.username,
+            sub: user.id,
+        },
+    {
+        secret: process.env.JWT_SECRET_KEY,
+        expiresIn: '6h',
+    });
+
+    return {
+        access_token: token,
+    }
     }
 
 

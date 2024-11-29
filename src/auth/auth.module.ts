@@ -8,13 +8,15 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { GoogleOAuthGuard } from './google-OAuth.guard';
+import { SessionSerializer } from './Serializer';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal:true}),
 
     PrismaModule,
-    PassportModule,
+    PassportModule.register({session: true}),
     JwtModule.register({
       secret: process.env.JWT_SECRET_KEY,
       signOptions: {expiresIn: '6h'},
@@ -22,6 +24,6 @@ import { GoogleStrategy } from './strategies/google.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy],
+  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy,GoogleOAuthGuard,SessionSerializer],
 })
 export class AuthModule {}
