@@ -1,10 +1,14 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-google-oauth2";
-import { VerifyCallback } from "passport-jwt";
-import { GoogleUserDTO } from "../dto/auth.dto";
+import { VerifyCallback } from "passport-google-oauth2";
+import { GoogleAuthPayloadDTO, GoogleUserDTO } from "../dto/auth.dto";
+import { AuthService } from "../auth.service";
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common"
 
+@Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy){
-    constructor(){
+    constructor(private readonly Authservice: AuthService){
+        
         super({
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -20,18 +24,25 @@ export class GoogleStrategy extends PassportStrategy(Strategy){
         profile: any,
         done: VerifyCallback,
     ):Promise<any>{
-            const {name,emails,photos} = profile;
 
-            const user: GoogleUserDTO = {
+    try{
+
+            const {name,emails,photos,id} = profile;
+
+            
+            const userPayload: GoogleUserDTO = {
                 email: emails[0].value,
                 firstName: name.givenName,
                 lastName: name.familyName,
-                picture: photos[0].value
-            }
-
-            console.log(profile);
-            console.log(accesstoken); 
-
-
+                accesstoken,
+                googleId: id, // Extract googleId from profile
+                pictureUrl: photos[0].value, // Extracted pictureUrl from profile
+            };
+         
+            done(null,userPayload);
+        }
+        catch(error){
+            done(error,null); 
+        }
     }
 }
