@@ -1,9 +1,10 @@
-import { Controller,Post, Get , Body, UseGuards,Res,Delete,Request, NotFoundException , Put,Param,BadRequestException, ParseIntPipe} from '@nestjs/common';
+import { Controller,Post,Get,Body,UseGuards,Res,Delete,NotFoundException,Request,Put,Param,BadRequestException, ParseIntPipe,Req,UnauthorizedException} from '@nestjs/common';
 import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO, UpdateUserDTO} from './dto/auth.dto';
-import {Response} from 'express'
+import {Response,Request as ExpressRequest} from 'express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleOAuthGuard } from './google-OAuth.guard';
+import { request } from 'http';
 
 @Controller('auth')
 export class AuthController {
@@ -97,9 +98,25 @@ export class AuthController {
   //handles redirect
   @Get('google/callback')
   @UseGuards(GoogleOAuthGuard)
-  handleRedirect(){
-      return {msg: 'OK'};
-  }
+  async handleRedirect(@Req() req,@Res({passthrough: true}) res: Response){
+      const googlePayload = req.user;
 
+      if (!googlePayload) {
+        throw new UnauthorizedException('User payload is missing');
+    }
+      
+      const usertoken =  await this.authService.GoogleCreateUser(googlePayload);
+
+      res.cookie('access_token', usertoken.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',  
+        sameSite: 'strict',
+        maxAge: 6 * 60 * 60 * 1000,  // 6 hours expiration
+    });
+
+    return usertoken;
+
+
+}
 
 }
