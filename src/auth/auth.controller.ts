@@ -119,4 +119,17 @@ export class AuthController {
 
 }
 
+@Get('status')
+checkstatus(@Req() request: ExpressRequest){
+    console.log(request.user);
+    
+    if(request.user){
+      return {msg: "Authenticated"};
+    }
+    else{
+      return {msg: "Not Authenticated"};
+    }
+
+}   
+
 }
