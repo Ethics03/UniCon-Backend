@@ -2,7 +2,7 @@ import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedE
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO, GoogleAuthPayloadDTO, UpdateUserDTO} from './dto/auth.dto';
+import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO, GoogleAuthPayloadDTO, GoogleUserDTO, UpdateUserDTO} from './dto/auth.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { NotFoundError } from 'rxjs';
 
@@ -31,8 +31,8 @@ export class AuthService {
         }
 
     
-    async GoogleFindUser(id: number){
-        const user = await this.prisma.users.findUnique({where: {id}});
+    async GoogleFindUser(googleid: string){
+        const user = await this.prisma.users.findUnique({where: {googleId: googleid},});
         return user;
     }
 
@@ -122,6 +122,7 @@ export class AuthService {
                     email,
                     username,
                     pictureUrl,
+                    isVerified: true,
                 },
             });
             return this.generateJwtToken(newUser);
