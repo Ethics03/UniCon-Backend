@@ -12,13 +12,22 @@ export class SessionSerializer extends PassportSerializer {
     }
 
     serializeUser(user: any, done: Function): void {
-        console.log("Serialize User");
-        done(null,user);
+        console.log("Serialized User")
+       
+        done(null,user.googleId); //removed logs
+
     }
+
     async deserializeUser(payload: any, done: Function) {
-        const user = await this.authService.GoogleFindUser(payload.id);
-        console.log("Deserialize User");
-        console.log(user);
-        return user ? done(null,user) : done(null,null);
+        try{
+        const user = await this.authService.GoogleFindUser(payload);
+        console.log("Deserializer User");
+        
+         done(null,user);
+        }
+        catch(error){
+            
+            done(error,null);
+        }
     }
 }
