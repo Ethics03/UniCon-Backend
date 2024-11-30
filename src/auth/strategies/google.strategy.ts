@@ -33,7 +33,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy){
 
     try{
 
-            const {name,emails,photos,id} = profile;
+            const {name,emails,photos,id: id} = profile;
 
             
             const userPayload: GoogleUserDTO = {
