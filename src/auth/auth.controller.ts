@@ -1,10 +1,11 @@
-import { Controller,Post,Get,Body,UseGuards,Res,Delete,NotFoundException,Request,Put,Param,BadRequestException, ParseIntPipe,Req,UnauthorizedException} from '@nestjs/common';
+import { Controller,Post,Get,Body,UseGuards,Res,Delete,NotFoundException,Request,Put,Param,BadRequestException, ParseIntPipe,Req,UnauthorizedException, ValidationPipe} from '@nestjs/common';
 import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO, UpdateUserDTO} from './dto/auth.dto';
 import {Response,Request as ExpressRequest} from 'express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleOAuthGuard } from './google-OAuth.guard';
-import { request } from 'http';
+
+
 
 @Controller('auth')
 export class AuthController {
@@ -28,11 +29,12 @@ export class AuthController {
 }
 
   @Post('register')
-    async register(@Body() createduser: CreateUserDTO, @Res({passthrough: true}) res:Response): Promise<AuthResponseDTO>{
+    async register(@Body(new ValidationPipe()) createduser: CreateUserDTO, @Res({passthrough: true}) res:Response): Promise<AuthResponseDTO>{
 
       try{
         const newUserToken =  await this.authService.createUser(createduser);
 
+      
         res.cookie('access_token',newUserToken.access_token,{
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
