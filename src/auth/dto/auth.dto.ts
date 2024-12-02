@@ -44,8 +44,8 @@ export class AuthResponseDTO{
 }
 
 export class CreateUserDTO{
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty()
+    @IsString()
     username: string;
 
     @IsNotEmpty()
@@ -56,9 +56,10 @@ export class CreateUserDTO{
     @IsEmail()
     email: string;
 
-  @IsNotEmpty()
-  @IsString()
+    @IsNotEmpty()
+    @IsString()
     name: string;
+  
 }
 
 export class UpdateUserDTO {
