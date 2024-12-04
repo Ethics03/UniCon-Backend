@@ -4,8 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO, GoogleAuthPayloadDTO, GoogleUserDTO, UpdateUserDTO} from './dto/auth.dto';
 import { JwtPayload } from './jwt-payload.interface';
-import { MailgunService } from 'nestjs-mailgun';
-import { MailgunMessageData } from 'nestjs-mailgun'
+
 
 @Injectable()
 export class AuthService {
@@ -13,7 +12,6 @@ export class AuthService {
     constructor(
         private readonly jwtService : JwtService,
         private readonly prisma: PrismaService,
-        private  mailgunService: MailgunService,
     ){}
 
     private readonly logger = new Logger(AuthService.name);
@@ -246,28 +244,4 @@ export class AuthService {
     }
 
     
-
-    
-     async sendVerificationEmail(userEmail: string, verificationLink: string){
-        const domain = process.env.MAILGUN_DOMAIN;
-        const data: MailgunMessageData= { 
-            from: `no-reply@${process.env.MAILGUN_DOMAIN}`,
-            to: userEmail,
-            subject: 'Please Verify Your Email Address',
-            text: `Hello! This is Team Unicon , please click the following link to verify your email address: ${verificationLink}`,
-            html: `<p>Hello,</p><p>Please click the following link to verify your email address: <a href="${verificationLink}">Verify Now</a></p>`,
-            'o:testmode': 'no',
-            'h:X-Mailgun-Variables': '{"key":"value"}',
-        };
-
-        try{
-            const result = await this.mailgunService.createEmail(domain,data);
-            console.log("Email sent successfully",result);
-
-        }catch(error){
-            console.log("Error sending email",error);
-            throw new InternalServerErrorException('Failed to send verification email. Please try again');
-        }
-}
-
 }
