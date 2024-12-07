@@ -151,8 +151,10 @@ async validateEmail(@Query('token') token: string, @Res() res: Response){
 
     await this.authService.verifyUserEmail(userId);
 
-    return res.redirect('https://uni-con.vercel.app/');
-
+    return res.status(200).json({
+      message: 'Email verified successfully!',
+      userId, //WILL UPDATE TO verification-success frontend rediirect later
+    });
   }catch(error){
     throw new BadRequestException('Invalid or expired verification token')
   }
