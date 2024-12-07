@@ -1,16 +1,21 @@
-import { Controller,Post,Get,Body,UseGuards,Res,Delete,NotFoundException,Request,Put,Param,BadRequestException, ParseIntPipe,Req,UnauthorizedException, ValidationPipe} from '@nestjs/common';
+import { Controller,Post,Get,Body,UseGuards,Res,Delete,NotFoundException,Request,Put,Param,BadRequestException, ParseIntPipe,Req,UnauthorizedException, ValidationPipe, Query} from '@nestjs/common';
 import { AuthPayloadDTO, CreateUserDTO , AuthResponseDTO, UpdateUserDTO} from './dto/auth.dto';
 import {Response,Request as ExpressRequest} from 'express'
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { GoogleOAuthGuard } from './google-OAuth.guard';
+import { MailgunService } from './mailgun.service';
 
 
 
 @Controller('auth')
 export class AuthController {
   
-  constructor(private authService : AuthService){}
+  constructor(
+    private authService : AuthService,
+    private mailgunService: MailgunService,
+  
+  ){}
 
 
   @Post('login')
@@ -33,6 +38,11 @@ export class AuthController {
 
       try{
         const newUserToken =  await this.authService.createUser(createduser);
+        const emailSubject = 'Welcome to Our Platform';
+        const emailText = `Hello ${createduser.name},\n\nWelcome to our platform! We are excited to have you on board.`;
+        const emailHtml = `<p>Hello ${createduser.name},</p><p>Welcome to our platform! We are excited to have you on board.</p>`;
+
+        await this.mailgunService.sendEmail(createduser.email,emailSubject, emailText, emailHtml);
 
       
         res.cookie('access_token',newUserToken.access_token,{
@@ -133,5 +143,19 @@ checkstatus(@Req() request: ExpressRequest){
     }
 
 }   
+
+@Get('verify-email')
+async validateEmail(@Query('token') token: string, @Res() res: Response){
+  try{
+    const userId = await this.authService.verifyVerificationToken(token);
+
+    await this.authService.verifyUserEmail(userId);
+
+    return res.redirect('https://uni-con.vercel.app/');
+
+  }catch(error){
+    throw new BadRequestException('Invalid or expired verification token')
+  }
+}
 
 }
