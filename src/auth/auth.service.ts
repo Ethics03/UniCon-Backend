@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthPayloadDTO, AuthResponseDTO , CreateUserDTO, GoogleAuthPayloadDTO, GoogleUserDTO, UpdateUserDTO} from './dto/auth.dto';
 import { JwtPayload } from './jwt-payload.interface';
+import { MailgunService } from './mailgun.service';
 
 
 @Injectable()
@@ -12,6 +13,7 @@ export class AuthService {
     constructor(
         private readonly jwtService : JwtService,
         private readonly prisma: PrismaService,
+        private mailgunService: MailgunService
     ){}
 
     private readonly logger = new Logger(AuthService.name);
@@ -60,8 +62,20 @@ export class AuthService {
                 ...createdata,
                 password: hashedpass,
                 isVerified: false,
+                verificationToken: this.jwtService.sign(
+                    {
+                    username: createdata.email,
+                },
+            {
+                secret: process.env.JWT_SECRET_KEY,
+                expiresIn: '1h',
+            })
             },
-        })
+        });
+
+        const verificationtoken = this.generateVerificationJwt(newUser);
+        
+        await this.mailgunService.sendVerificationEmail(newUser.email,verificationtoken.access_token);
 
         const token = this.jwtService.sign({
             username: newUser.username,
@@ -243,5 +257,52 @@ export class AuthService {
     }
     }
 
+    generateVerificationJwt(user: any): AuthResponseDTO {
+        const token = this.jwtService.sign(
+          {
+            sub: user.id, 
+          },
+          {
+            secret: process.env.JWT_SECRET_KEY, 
+            expiresIn: '1h', 
+          },
+        );
     
+        return {
+          access_token: token,
+        };
+      }
+
+    async verifyVerificationToken(token: string): Promise<number> {
+        try{
+            const decoded = this.jwtService.verify(token,{
+                secret: process.env.JWT_SECRET_KEY,
+            });
+
+            return decoded.sub;
+        }
+        catch(error){
+            throw new UnauthorizedException('Invalid or expired verification token');
+        }
+    }
+
+    async verifyUserEmail(userId: number): Promise<void>{
+        const user = await this.prisma.users.findUnique({
+            where: {id: userId},
+        });
+
+        if(!user){
+            throw new UnauthorizedException('User not Found');
+        }
+
+        if(user.isVerified){
+            throw new UnauthorizedException('User already verified');
+        }
+
+        await this.prisma.users.update({
+            where: {id: userId},
+            data: {isVerified: true},
+        })
+    }
+      
 }
