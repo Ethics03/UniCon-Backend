@@ -10,6 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleOAuthGuard } from './google-OAuth.guard';
 import { SessionSerializer } from './Serializer';
+import { MailgunService } from './mailgun.service';
 
 
 
@@ -26,7 +27,8 @@ import { SessionSerializer } from './Serializer';
   ],
  
   controllers: [AuthController],
-  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy,GoogleOAuthGuard,SessionSerializer],
+  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy,GoogleOAuthGuard,SessionSerializer,MailgunService],
+  exports: [MailgunService],
   
 })
 export class AuthModule {}
