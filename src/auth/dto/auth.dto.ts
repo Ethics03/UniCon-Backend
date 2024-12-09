@@ -24,7 +24,7 @@ export class GoogleAuthPayloadDTO{
   username?: string;
 
   @IsOptional()
-  @IsString()
+  @IsEmail()
   email: string;
 
   @IsOptional()
