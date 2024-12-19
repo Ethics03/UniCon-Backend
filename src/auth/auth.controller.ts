@@ -61,7 +61,6 @@ export class AuthController {
           error: error.message,
         });
       }
-
     }
 
   @UseGuards(JwtAuthGuard) 
@@ -155,8 +154,34 @@ async validateEmail(@Query('token') token: string, @Res() res: Response){
       message: 'Email verified successfully!',
       userId, //WILL UPDATE TO verification-success frontend rediirect later
     });
+    
   }catch(error){
     throw new BadRequestException('Invalid or expired verification token')
+  }
+}
+
+@Post('forgot-password')
+async forgotPassword(@Body('email') email: string , @Res() res:Response){
+  try{
+    await this.authService.sendResetPasswordEmail(email);
+    return res.status(200).json({message: 'Password reset link sent ! '});
+  } catch(error){
+    throw new NotFoundException('Email not found');
+  }
+}
+
+@Post('reset-password')
+async resetPassword(
+  @Query('token') token: string,
+  @Body('newPassword') newPassword: string,
+  @Res() res: Response
+)
+{
+  try{
+    await this.authService.resetPassword(token,newPassword);
+    return res.status(200).json({message: 'Password Updated SuccessFully'});
+  } catch(error){
+    throw new BadRequestException('Invalid or expired token');
   }
 }
 
