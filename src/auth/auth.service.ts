@@ -1,4 +1,4 @@
-import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedException , InternalServerErrorException,Logger} from '@nestjs/common';
+import { ConflictException, Injectable , NotFoundException, Param, UnauthorizedException , InternalServerErrorException,Logger, BadRequestException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -304,5 +304,57 @@ export class AuthService {
             data: {isVerified: true},
         })
     }
+
+    //SENDING RESET PASSWORD MAIL SERVICE
+    async sendResetPasswordEmail(email: string){
+            const user = await this.prisma.users.findUnique({where: {email}});
+
+            if(!user){
+                throw new NotFoundException;
+            }
+
+            const token = this.jwtService.sign(
+                {
+                    username: user.username,
+                    userId: user.id,  
+                },
+                {
+                    secret: process.env.JWT_SECRET_KEY,
+                    expiresIn: '6h',
+                }
+            );
+
+            const resetLink = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
+            const emailSubject = 'Reset Your Password';
+            const emailText = `Click the link to reset your password: ${resetLink}`;
+            const emailHtml = `<p>Click the link to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p>`;
+
+            await this.mailgunService.sendEmail(user.email,emailSubject,emailText,emailHtml);
+        
+    }
+
+
+    //RESET PASSWORD SERVICE
+    async resetPassword(token: string , newPassword: string){
+        try{
+            const payload = this.jwtService.verify(token,{secret: process.env.JWT_SECRET_KEY});
+            const user = await this.prisma.users.findUnique({where: {id: payload.userId}});
+
+            if(!user){
+                throw new BadRequestException("Invalid Token");
+            }
+            
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+            await this.prisma.users.update({
+                where: {id: user.id},
+                data: {password: hashedPassword},
+            });
+        }  catch(error){
+            throw new BadRequestException("Invalid or expired Token");
+        }
+    }
+
       
 }
