@@ -11,4 +11,5 @@ export class GoogleOAuthGuard extends AuthGuard('google'){
         await super.logIn(request);
         return activate;
     }
+    
 }
