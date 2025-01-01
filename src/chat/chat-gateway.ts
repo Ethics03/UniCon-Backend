@@ -10,7 +10,7 @@ export  class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
     handleConnection(client: Socket) {
         console.log("New user connected..",client.id)
 
-        client.broadcast.emit('user-joined',{
+        client.broadcast.emit('user-joined',{  //broadcasting to all the users except the user who joined
             message: `New User Joined the chat: ${client.id}`, 
         });
     }
@@ -25,7 +25,6 @@ export  class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
     @SubscribeMessage("MessageEvent")
     handleNewMessage(@MessageBody() message: string){
-
             this.server.emit('message',message); //broadcast the message to all
     }
 }
