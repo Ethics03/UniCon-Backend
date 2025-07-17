@@ -11,6 +11,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleOAuthGuard } from './google-OAuth.guard';
 import { SessionSerializer } from './Serializer';
 import { MailgunService } from './mailgun.service';
+import { SupabaseStrategy } from './strategies/supabase.strategy';
 
 
 
@@ -27,7 +28,7 @@ import { MailgunService } from './mailgun.service';
   ],
  
   controllers: [AuthController],
-  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy,GoogleOAuthGuard,SessionSerializer,MailgunService],
+  providers: [AuthService,JwtStrategy,PrismaService,GoogleStrategy,GoogleOAuthGuard,SessionSerializer,MailgunService,SupabaseStrategy],
   exports: [MailgunService],
   
 })
