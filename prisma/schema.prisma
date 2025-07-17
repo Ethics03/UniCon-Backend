@@ -17,11 +17,13 @@ model Users{
   
   id Int @id @default(autoincrement())
   name String? @db.VarChar(100)
+  password String? @db.VarChar(100)
   username String @unique @db.VarChar(45)
   email String @unique @db.VarChar(45)
   googleId   String?  @unique //OAuth ID
   pictureUrl String?  //Profile pic url
   isVerified Boolean  @default(false) // Indicates if email is verified
+  verificationToken String?  // Token for email verification
   createdAt  DateTime @default(now()) 
   updatedAt  DateTime @updatedAt @default(now())
   
